@@ -1,4 +1,4 @@
-import { createRouter, createMemoryHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 
 import Menu from './components/Menu.vue';
 import Game from './components/Game.vue';
@@ -9,7 +9,7 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createMemoryHistory(),
+    history: createWebHistory(),
     routes
 })
 
