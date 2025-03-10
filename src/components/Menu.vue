@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import debounce from 'debounce';
+import _ from 'lodash-es';
 
 import NumberSelector from './NumberSelector.vue';
 import ProblemTypesSelector from './ProblemTypesSelector.vue';
@@ -18,26 +18,18 @@ let timeout = ref(10);
 let goal = ref(25);
 let limit = ref(50);
 
-let numberProps = {
-    timeout,
-    goal,
-    limit,
-};
-
-let adjustValue = debounce((type, amount) => {
-    let value = numberProps[type].value + amount;
-    if (value < 1) {
-        value = 1;
-    }
-    numberProps[type].value = value;
-}, 100, {immediate: true});
-
-let toggleType = debounce((type) => {
-    let value = !types.value[type]
-    types.value[type] = value;
-}, 100, {immediate: true});
 
 function beginGame() {
+    console.log(`${goal.value}, ${limit.value}`);
+    if(goal.value > limit.value) {
+        alert("Questions to Win must be less than Max Total Questions");
+        return;
+    }
+    if(!_.values(types.value).some(e => e)) {
+        alert("At least one type of problem must be selected");
+        return;
+    }
+    
     router.push({
         path: '/game',
         query: {
@@ -56,13 +48,10 @@ function beginGame() {
 
 <template>
     <div class="text-center select-none">
-        <ProblemTypesSelector :types="types" @toggle="toggleType" />
-        <NumberSelector @increment="adjustValue('timeout', 1)" @decrement="adjustValue('timeout', -1)"
-            label="Seconds Per Question" :value="timeout" />
-        <NumberSelector @increment="adjustValue('goal', 1)" @decrement="adjustValue('goal', -1)"
-            label="Questions to Win" :value="goal" />
-        <NumberSelector @increment="adjustValue('limit', 1)" @decrement="adjustValue('limit', -1)"
-            label="Max Total Questions" :value="limit" />
+        <ProblemTypesSelector v-model="types" />
+        <NumberSelector label="Seconds Per Question" v-model="timeout" :dependent="{type: 'none'}"/>
+        <NumberSelector label="Questions to Win" v-model="goal" :dependent="{type: 'lt', value: {limit} }"/>
+        <NumberSelector label="Max Total Questions" v-model="limit" :dependent="{type: 'gt', value: {goal}}"/>
         <div @click="beginGame" class="border-solid border-1 m-1 h-32 flex items-center justify-center">Begin Game</div>
     </div>
 </template>
